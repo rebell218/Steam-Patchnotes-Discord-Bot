@@ -82,8 +82,21 @@ function tableRows(table) {
 
 markdownConverter.addRule("steamHeading", {
   filter: ["h1", "h2", "h3", "h4", "h5", "h6"],
-  replacement(content) {
-    return `\n\n**${content.trim()}**\n\n`;
+  replacement(content, node) {
+    const level = Number(node.nodeName.slice(1));
+    return level <= 3
+      ? `\n\n${"#".repeat(level)} ${content.trim()}\n\n`
+      : `\n\n**${content.trim()}**\n\n`;
+  },
+});
+
+markdownConverter.addRule("steamClassHeading", {
+  filter(node) {
+    return node.nodeName === "DIV" && /\bbb_h[123]\b/.test(node.getAttribute("class") ?? "");
+  },
+  replacement(content, node) {
+    const level = Number(node.getAttribute("class").match(/\bbb_h([123])\b/)[1]);
+    return `\n\n${"#".repeat(level)} ${content.trim()}\n\n`;
   },
 });
 
@@ -146,7 +159,8 @@ function convertHtmlToDiscordMarkdown(input) {
   if (!input) return "";
   const html = he.decode(String(input))
     .replace(/\\\[/g, "[")
-    .replace(/\\\]/g, "]");
+    .replace(/\\\]/g, "]")
+    .replace(/\[\/?carousel\]/gi, "");
   return normalizeConvertedMarkdown(markdownConverter.turndown(html));
 }
 
@@ -157,10 +171,10 @@ function convertSteamBbcodeToHtml(input) {
     .replace(/\\\]/g, "]");
 
   text = text.replace(
-    /\[(?:carousel|previewyoutube|youtube|video|img)[^\]]*\][\s\S]*?\[\/(?:carousel|previewyoutube|youtube|video|img)\]/gi,
+    /\[(?:previewyoutube|youtube|video|img)[^\]]*\][\s\S]*?\[\/(?:previewyoutube|youtube|video|img)\]/gi,
     ""
   );
-  text = text.replace(/\[(?:carousel|previewyoutube|youtube|video|img)[^\]]*\]/gi, "");
+  text = text.replace(/\[(?:previewyoutube|youtube|video|img)[^\]]*\]/gi, "");
 
   text = text.replace(
     /\[url=(.+?)\]([\s\S]*?)\[\/url\]/gi,
