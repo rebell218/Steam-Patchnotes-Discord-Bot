@@ -1,4 +1,4 @@
-# Lightweight Steam Patchnotes Discord Bot
+# Steam Patchnotes Discord Bot
 
 This bot monitors Steam news for specific AppIDs and posts full patch-note text into a chosen Discord channel or thread. It avoids link-embeds and splits large posts across multiple messages.
 
